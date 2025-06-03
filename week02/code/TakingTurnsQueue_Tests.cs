@@ -11,7 +11,9 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (5), Sue (3) and
     // run until the queue is empty
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
-    // Defect(s) Found: 
+    // Defect(s) Found: Bob and Sue were not re-added correctly due to incorrect handling of Turns 
+    //Infinite turns logic was not the issue here, but finite turn tracking was incorrect.
+    //Fixed by properly decrementing Turns and re-adding people with Turns > 1 only
     public void TestTakingTurnsQueue_FiniteRepetition()
     {
         var bob = new Person("Bob", 2);
@@ -40,10 +42,12 @@ public class TakingTurnsQueueTests
     }
 
     [TestMethod]
+
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (5), Sue (3)
     // After running 5 times, add George with 3 turns.  Run until the queue is empty.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, George, Sue, Tim, George, Tim, George
-    // Defect(s) Found: 
+    // Defect(s) Found: George may not be handled correctly if turn decrementing/re-adding is broken.
+    // Fixed by using consistent re-add logic that works for newly added people mid-run.
     public void TestTakingTurnsQueue_AddPlayerMidway()
     {
         var bob = new Person("Bob", 2);
@@ -80,12 +84,14 @@ public class TakingTurnsQueueTests
             i++;
         }
     }
-
+    
     [TestMethod]
+    // ✅ Fixed by checking for Turns <= 0 and re-adding them without modifying their Turns.
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (Forever), Sue (3)
     // Run 10 times.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
-    // Defect(s) Found: 
+    // Defect(s) Found: People with infinite turns (Turns = 0) were NOT being re-added.
+    //Fixed by checking for Turns <= 0 and re-adding them without modifying their Turns.
     public void TestTakingTurnsQueue_ForeverZero()
     {
         var timTurns = 0;
@@ -113,10 +119,12 @@ public class TakingTurnsQueueTests
     }
 
     [TestMethod]
+
     // Scenario: Create a queue with the following people and turns: Tim (Forever), Sue (3)
     // Run 10 times.
     // Expected Result: Tim, Sue, Tim, Sue, Tim, Sue, Tim, Tim, Tim, Tim
-    // Defect(s) Found: 
+    // Defect(s) Found: People with negative infinite turns (Turns < 0) were NOT being re-added.
+    // Fixed by recognizing Turns <= 0 as "infinite" and skipping decrement/replacement.
     public void TestTakingTurnsQueue_ForeverNegative()
     {
         var timTurns = -3;
@@ -143,7 +151,7 @@ public class TakingTurnsQueueTests
     [TestMethod]
     // Scenario: Try to get the next person from an empty queue
     // Expected Result: Exception should be thrown with appropriate error message.
-    // Defect(s) Found: 
+    // Defect(s) Found:  No defect found. Already correctly throws an InvalidOperationException.
     public void TestTakingTurnsQueue_Empty()
     {
         var players = new TakingTurnsQueue();
@@ -170,3 +178,6 @@ public class TakingTurnsQueueTests
         }
     }
 }
+
+
+
