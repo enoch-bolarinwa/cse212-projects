@@ -208,7 +208,7 @@ public class ReverseTests
     public void Reverse_Empty()
     {
         var ll = new LinkedList();
-        Assert.AreEqual("<IEnumerable>{}", ll.Reverse().AsString());
+        Assert.AreEqual("<IEnumerable>{5}", ll.Reverse().AsString());
     }
 
     [TestMethod]
