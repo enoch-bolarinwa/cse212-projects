@@ -1,106 +1,102 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 
-public class BinarySearchTree : IEnumerable<int>
+public class BinarySearchTree
 {
-    private Node? _root;
+    private class Node
+    {
+        public int Value;
+        public Node? Left, Right;
 
-    /// <summary>
-    /// Insert a new node in the BST.
-    /// </summary>
+        public Node(int value)
+        {
+            Value = value;
+        }
+    }
+
+    private Node? root;
+
     public void Insert(int value)
     {
-        // Create new node
-        Node newNode = new(value);
-        // If the list is empty, then point both head and tail to the new node.
-        if (_root is null)
-        {
-            _root = newNode;
-        }
-        // If the list is not empty, then only head will be affected.
-        else
-        {
-            _root.Insert(value);
-        }
+        root = InsertRecursive(root, value);
     }
 
-    /// <summary>
-    /// Check to see if the tree contains a certain value
-    /// </summary>
-    /// <param name="value">The value to look for</param>
-    /// <returns>true if found, otherwise false</returns>
+    private Node InsertRecursive(Node? node, int value)
+    {
+        if (node == null)
+            return new Node(value);
+
+        if (value < node.Value)
+            node.Left = InsertRecursive(node.Left, value);
+        else if (value > node.Value)
+            node.Right = InsertRecursive(node.Right, value);
+        // Duplicate values are ignored
+
+        return node;
+    }
+
     public bool Contains(int value)
     {
-        return _root != null && _root.Contains(value);
+        return ContainsRecursive(root, value);
     }
 
-    /// <summary>
-    /// Yields all values in the tree
-    /// </summary>
-    IEnumerator IEnumerable.GetEnumerator()
+    private bool ContainsRecursive(Node? node, int value)
     {
-        // call the generic version of the method
-        return GetEnumerator();
+        if (node == null) return false;
+        if (value == node.Value) return true;
+        return value < node.Value
+            ? ContainsRecursive(node.Left, value)
+            : ContainsRecursive(node.Right, value);
     }
 
-    /// <summary>
-    /// Iterate forward through the BST
-    /// </summary>
-    public IEnumerator<int> GetEnumerator()
+    public IEnumerable<int> Reverse()
     {
-        var numbers = new List<int>();
-        TraverseForward(_root, numbers);
-        foreach (var number in numbers)
-        {
-            yield return number;
-        }
+        var result = new List<int>();
+        ReverseInOrder(root, result);
+        return result;
     }
 
-    private void TraverseForward(Node? node, List<int> values)
+    private void ReverseInOrder(Node? node, List<int> result)
     {
-        if (node is not null)
-        {
-            TraverseForward(node.Left, values);
-            values.Add(node.Data);
-            TraverseForward(node.Right, values);
-        }
+        if (node == null) return;
+        ReverseInOrder(node.Right, result);
+        result.Add(node.Value);
+        ReverseInOrder(node.Left, result);
     }
 
-    /// <summary>
-    /// Iterate backward through the BST.
-    /// </summary>
-    public IEnumerable Reverse()
-    {
-        var numbers = new List<int>();
-        TraverseBackward(_root, numbers);
-        foreach (var number in numbers)
-        {
-            yield return number;
-        }
-    }
-
-    private void TraverseBackward(Node? node, List<int> values)
-    {
-        // TODO Problem 3
-    }
-
-    /// <summary>
-    /// Get the height of the tree
-    /// </summary>
     public int GetHeight()
     {
-        if (_root is null)
-            return 0;
-        return _root.GetHeight();
+        return GetHeightRecursive(root);
+    }
+
+    private int GetHeightRecursive(Node? node)
+    {
+        if (node == null) return 0;
+        return 1 + Math.Max(GetHeightRecursive(node.Left), GetHeightRecursive(node.Right));
     }
 
     public override string ToString()
     {
-        return "<Bst>{" + string.Join(", ", this) + "}";
+        var result = new List<int>();
+        InOrderTraversal(root, result);
+        return "<Bst>{" + string.Join(", ", result) + "}";
+    }
+
+    private void InOrderTraversal(Node? node, List<int> result)
+    {
+        if (node == null) return;
+        InOrderTraversal(node.Left, result);
+        result.Add(node.Value);
+        InOrderTraversal(node.Right, result);
     }
 }
 
-public static class IntArrayExtensionMethods {
-    public static string AsString(this IEnumerable array) {
-        return "<IEnumerable>{" + string.Join(", ", array.Cast<int>()) + "}";
+public static class ExtensionMethods
+{
+    public static string AsString(this IEnumerable<int> sequence)
+    {
+        return "<IEnumerable>{" + string.Join(", ", sequence) + "}";
     }
 }
